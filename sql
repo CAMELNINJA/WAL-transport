@@ -20,3 +20,4 @@ INSERT INTO t(id, name) SELECT g.id, k.name FROM generate_series(1, 10) as g(id)
 SELECT * FROM pg_logical_slot_get_changes('replication_slot', NULL, NULL);
 
 SELECT pg_drop_replication_slot('replication_slot');
+
