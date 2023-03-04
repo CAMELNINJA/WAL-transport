@@ -16,7 +16,7 @@ type DatabaseCfg struct {
 }
 
 // initPgxConnections initialise db and replication connections.
-func initPgxConnections(cfg DatabaseCfg) (*pgx.Conn, *pgx.ReplicationConn, error) {
+func InitPgxConnections(cfg DatabaseCfg) (*pgx.Conn, *pgx.ReplicationConn, error) {
 	pgxConf := pgx.ConnConfig{
 		// TODO logger
 		LogLevel: pgx.LogLevelInfo,
