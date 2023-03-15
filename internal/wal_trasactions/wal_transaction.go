@@ -1,0 +1,256 @@
+package waltrasactions
+
+import (
+	"encoding/json"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/CAMELNINGA/cdc-postgres/internal/models"
+	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
+
+	error_walListner "github.com/CAMELNINGA/cdc-postgres/pkg/error_walListner"
+)
+
+// ActionKind kind of action on WAL message.
+type ActionKind string
+
+// kind of WAL message.
+const (
+	ActionKindInsert ActionKind = "INSERT"
+	ActionKindUpdate ActionKind = "UPDATE"
+	ActionKindDelete ActionKind = "DELETE"
+)
+
+// PostgreSQL OIDs
+// https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.dat
+const (
+	Int2OID = 21
+	Int4OID = 23
+	Int8OID = 20
+
+	TextOID    = 25
+	VarcharOID = 1043
+
+	TimestampOID   = 1114
+	TimestamptzOID = 1184
+	DateOID        = 1082
+	TimeOID        = 1083
+
+	JSONBOID = 3802
+	UUIDOID  = 2950
+	BoolOID  = 16
+)
+
+// WalTransaction transaction specified WAL message.
+type WalTransaction struct {
+	LSN           int64
+	BeginTime     *time.Time
+	CommitTime    *time.Time
+	RelationStore map[int32]RelationData
+	Actions       []ActionData
+}
+
+// NewWalTransaction create and initialize new WAL transaction.
+func NewWalTransaction() *WalTransaction {
+	return &WalTransaction{
+		RelationStore: make(map[int32]RelationData),
+	}
+}
+
+func (k ActionKind) string() string {
+	return string(k)
+}
+
+// RelationData kind of WAL message data.
+type RelationData struct {
+	Schema  string
+	Table   string
+	Columns []Column
+}
+
+// ActionData kind of WAL message data.
+type ActionData struct {
+	Schema     string
+	Table      string
+	Kind       ActionKind
+	OldColumns []Column
+	NewColumns []Column
+}
+
+// Column of the table with which changes occur.
+type Column struct {
+	name      string
+	value     any
+	valueType int
+	isKey     bool
+}
+
+// AssertValue converts bytes to a specific type depending
+// on the type of this data in the database table.
+func (c *Column) AssertValue(src []byte) {
+	var (
+		val any
+		err error
+	)
+
+	if src == nil {
+		c.value = nil
+		return
+	}
+
+	strSrc := string(src)
+
+	const (
+		timestampLayout       = "2006-01-02 15:04:05"
+		timestampWithTZLayout = "2006-01-02 15:04:05.999999999-07"
+	)
+
+	switch c.valueType {
+	case BoolOID:
+		val, err = strconv.ParseBool(strSrc)
+	case Int2OID, Int4OID:
+		val, err = strconv.Atoi(strSrc)
+	case Int8OID:
+		val, err = strconv.ParseInt(strSrc, 10, 64)
+	case TextOID, VarcharOID:
+		val = strSrc
+	case TimestampOID:
+		val, err = time.Parse(timestampLayout, strSrc)
+	case TimestamptzOID:
+		val, err = time.ParseInLocation(timestampWithTZLayout, strSrc, time.UTC)
+	case DateOID, TimeOID:
+		val = strSrc
+	case UUIDOID:
+		val, err = uuid.Parse(strSrc)
+	case JSONBOID:
+		var m any
+		if src[0] == '[' {
+			m = make([]any, 0)
+		} else {
+			m = make(map[string]any)
+		}
+		err = json.Unmarshal(src, &m)
+		val = m
+	default:
+		logrus.WithFields(logrus.Fields{"pgtype": c.valueType, "column_name": c.name}).Warnln("unknown oid type")
+		val = strSrc
+	}
+
+	if err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{"pgtype": c.valueType, "column_name": c.name}).
+			Errorln("column data parse error")
+	}
+
+	c.value = val
+}
+
+// Clear transaction data.
+func (w *WalTransaction) Clear() {
+	w.CommitTime = nil
+	w.BeginTime = nil
+	w.Actions = nil
+}
+
+// CreateActionData create action  from WAL message data.
+func (w *WalTransaction) CreateActionData(relationID int32, oldRows []TupleData, newRows []TupleData, kind ActionKind) (a ActionData, err error) {
+	rel, ok := w.RelationStore[relationID]
+	if !ok {
+		return a, error_walListner.ErrRelationNotFound
+	}
+
+	a = ActionData{
+		Schema: rel.Schema,
+		Table:  rel.Table,
+		Kind:   kind,
+	}
+
+	var oldColumns []Column
+
+	for num, row := range oldRows {
+		column := Column{
+			name:      rel.Columns[num].name,
+			valueType: rel.Columns[num].valueType,
+			isKey:     rel.Columns[num].isKey,
+		}
+		column.AssertValue(row.Value)
+		oldColumns = append(oldColumns, column)
+	}
+
+	a.OldColumns = oldColumns
+
+	var newColumns []Column
+	for num, row := range newRows {
+		column := Column{
+			name:      rel.Columns[num].name,
+			valueType: rel.Columns[num].valueType,
+			isKey:     rel.Columns[num].isKey,
+		}
+		column.AssertValue(row.Value)
+		newColumns = append(newColumns, column)
+	}
+	a.NewColumns = newColumns
+
+	return a, nil
+}
+
+// CreateEventsWithFilter filter WAL message by table,
+// action and create events for each value.
+func (w *WalTransaction) CreateEventsWithFilter(tableMap map[string][]string) []models.Event {
+	var events []models.Event
+
+	for _, item := range w.Actions {
+		dataOld := make(map[string]any)
+		for _, val := range item.OldColumns {
+			dataOld[val.name] = val.value
+		}
+
+		data := make(map[string]any)
+		for _, val := range item.NewColumns {
+			data[val.name] = val.value
+		}
+
+		event := models.Event{
+			ID:        uuid.New(),
+			Schema:    item.Schema,
+			Table:     item.Table,
+			Action:    item.Kind.string(),
+			DataOld:   dataOld,
+			Data:      data,
+			EventTime: *w.CommitTime,
+		}
+
+		actions, validTable := tableMap[item.Table]
+
+		validAction := inArray(actions, item.Kind.string())
+		if validTable && validAction {
+			events = append(events, event)
+			continue
+		}
+
+		filterSkippedEvents.With(prometheus.Labels{"table": item.Table}).Inc()
+
+		logrus.WithFields(
+			logrus.Fields{
+				"schema": item.Schema,
+				"table":  item.Table,
+				"action": item.Kind,
+			}).
+			Infoln("wal-message was skipped by filter")
+	}
+
+	return events
+}
+
+// inArray checks whether the value is in an array.
+func inArray(arr []string, value string) bool {
+	for _, v := range arr {
+		if strings.EqualFold(v, value) {
+			return true
+		}
+	}
+
+	return false
+}
