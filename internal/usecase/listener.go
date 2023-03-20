@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/CAMELNINGA/cdc-postgres/internal/models"
+
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 )
@@ -96,7 +97,7 @@ func (l *Listener) Stream(ctx context.Context) {
 
 	go l.SendPeriodicHeartbeats(ctx)
 
-	tx := NewWalTransaction()
+	tx := waltrasactions.NewWalTransaction()
 
 	for {
 		if err := ctx.Err(); err != nil {
@@ -132,7 +133,7 @@ func (l *Listener) Stream(ctx context.Context) {
 							continue
 						}
 
-						publishedEvents.With(prometheus.Labels{"subject": subjectName, "table": event.Table}).Inc()
+						// publishedEvents.With(prometheus.Labels{"subject": subjectName, "table": event.Table}).Inc()
 
 						l.log.WithFields(logrus.Fields{
 							"subject": subjectName,

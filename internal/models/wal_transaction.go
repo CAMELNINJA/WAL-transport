@@ -1,4 +1,4 @@
-package waltrasactions
+package models
 
 import (
 	"encoding/json"
@@ -6,9 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CAMELNINGA/cdc-postgres/internal/models"
 	"github.com/google/uuid"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	error_walListner "github.com/CAMELNINGA/cdc-postgres/pkg/error_walListner"
@@ -198,8 +196,8 @@ func (w *WalTransaction) CreateActionData(relationID int32, oldRows []TupleData,
 
 // CreateEventsWithFilter filter WAL message by table,
 // action and create events for each value.
-func (w *WalTransaction) CreateEventsWithFilter(tableMap map[string][]string) []models.Event {
-	var events []models.Event
+func (w *WalTransaction) CreateEventsWithFilter(tableMap map[string][]string) []Event {
+	var events []Event
 
 	for _, item := range w.Actions {
 		dataOld := make(map[string]any)
@@ -212,8 +210,9 @@ func (w *WalTransaction) CreateEventsWithFilter(tableMap map[string][]string) []
 			data[val.name] = val.value
 		}
 
-		event := models.Event{
-			ID:        uuid.New(),
+		x := uuid.New()
+		event := Event{
+			ID:        x,
 			Schema:    item.Schema,
 			Table:     item.Table,
 			Action:    item.Kind.string(),
@@ -230,7 +229,7 @@ func (w *WalTransaction) CreateEventsWithFilter(tableMap map[string][]string) []
 			continue
 		}
 
-		filterSkippedEvents.With(prometheus.Labels{"table": item.Table}).Inc()
+		// filterSkippedEvents.With(prometheus.Labels{"table": item.Table}).Inc()
 
 		logrus.WithFields(
 			logrus.Fields{
