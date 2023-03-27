@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/CAMELNINGA/cdc-postgres/pkg/postgres"
 	"github.com/spf13/viper"
@@ -9,6 +10,11 @@ import (
 
 type Config struct {
 	Database postgres.DatabaseCfg `mapstructure:"db"`
+	Listener Listener             `mapstructure:"listener"`
+}
+
+type Listener struct {
+	RefreshConnection time.Duration
 }
 
 func NewConfig() *Config {

@@ -4,23 +4,23 @@ import "errors"
 
 // Variable with connection errors.
 var (
-	errReplConnectionIsLost = errors.New("replication connection to postgres is lost")
-	errConnectionIsLost     = errors.New("db connection to postgres is lost")
-	errMessageLost          = errors.New("messages are lost")
-	errEmptyWALMessage      = errors.New("empty WAL message")
-	errUnknownMessageType   = errors.New("unknown message type")
+	ErrReplConnectionIsLost = errors.New("replication connection to postgres is lost")
+	ErrConnectionIsLost     = errors.New("db connection to postgres is lost")
+	ErrMessageLost          = errors.New("messages are lost")
+	ErrEmptyWALMessage      = errors.New("empty WAL message")
+	ErrUnknownMessageType   = errors.New("unknown message type")
 	ErrRelationNotFound     = errors.New("relation not found")
 )
 
-type serviceErr struct {
+type ServiceErr struct {
 	Caller string
 	Err    error
 }
 
-func newListenerError(caller string, err error) *serviceErr {
-	return &serviceErr{Caller: caller, Err: err}
+func NewListenerError(caller string, err error) *ServiceErr {
+	return &ServiceErr{Caller: caller, Err: err}
 }
 
-func (e *serviceErr) Error() string {
+func (e *ServiceErr) Error() string {
 	return e.Caller + ": " + e.Err.Error()
 }
