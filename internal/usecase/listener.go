@@ -2,11 +2,16 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
+	"os/signal"
 	"sync"
 	"time"
 
+	"github.com/CAMELNINGA/cdc-postgres/config"
 	"github.com/CAMELNINGA/cdc-postgres/internal/models"
+	error_walListner "github.com/CAMELNINGA/cdc-postgres/pkg/error_walListner"
 
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
@@ -44,6 +49,7 @@ type repository interface {
 
 // Listener main service struct.
 type Listener struct {
+	cfg        config.Config
 	log        *logrus.Entry
 	mu         sync.RWMutex
 	slotName   string
@@ -80,6 +86,79 @@ const (
 	publicationName = "wal-listener"
 )
 
+// Process is main service entry point.
+func (l *Listener) Process(ctx context.Context) error {
+	logger := l.log.WithField("slot_name", l.slotName)
+
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
+	defer stop()
+
+	logger.Infoln("service was started")
+
+	if err := l.repository.CreatePublication(publicationName); err != nil {
+		logger.WithError(err).Warnln("skip create publication")
+	}
+
+	slotIsExists, err := l.slotIsExists()
+	if err != nil {
+		return fmt.Errorf("slot is exists: %w", err)
+	}
+
+	if !slotIsExists {
+		consistentPoint, _, err := l.replicator.CreateReplicationSlotEx(l.slotName, pgOutputPlugin)
+		if err != nil {
+			return fmt.Errorf("create replication slot: %w", err)
+		}
+
+		lsn, err := pgx.ParseLSN(consistentPoint)
+		if err != nil {
+			return fmt.Errorf("parse lsn: %w", err)
+		}
+
+		l.setLSN(lsn)
+		logger.Infoln("new slot was created")
+	} else {
+		logger.Infoln("slot already exists, LSN updated")
+	}
+
+	go l.Stream(ctx)
+
+	refresh := time.NewTicker(l.cfg.Listener.RefreshConnection)
+	defer refresh.Stop()
+
+	var svcErr *error_walListner.ServiceErr
+
+ProcessLoop:
+	for {
+		select {
+		case <-refresh.C:
+			if !l.replicator.IsAlive() {
+				return fmt.Errorf("replicator: %w", error_walListner.ErrReplConnectionIsLost)
+			}
+
+			if !l.repository.IsAlive() {
+				return fmt.Errorf("repository: %w", error_walListner.ErrConnectionIsLost)
+			}
+		case err := <-l.errChannel:
+			if errors.As(err, &svcErr) {
+				return err
+			}
+
+			l.log.WithError(err).Errorln("received error")
+		case <-ctx.Done():
+			logger.Debugln("context was canceled")
+
+			if err := l.Stop(); err != nil {
+				logger.WithError(err).Errorln("listener stop error")
+			}
+
+			break ProcessLoop
+		}
+	}
+
+	return nil
+}
+
 // Stream receive event from PostgreSQL.
 // Accept message, apply filter and  publish it in NATS server.
 func (l *Listener) Stream(ctx context.Context) {
@@ -90,24 +169,24 @@ func (l *Listener) Stream(ctx context.Context) {
 		protoVersion,
 		publicationNames(publicationName),
 	); err != nil {
-		l.errChannel <- newListenerError("StartReplication()", err)
+		l.errChannel <- error_walListner.NewListenerError("StartReplication()", err)
 
 		return
 	}
 
 	go l.SendPeriodicHeartbeats(ctx)
 
-	tx := waltrasactions.NewWalTransaction()
+	tx := models.NewWalTransaction()
 
 	for {
 		if err := ctx.Err(); err != nil {
-			l.errChannel <- newListenerError("read msg", err)
+			l.errChannel <- error_walListner.NewListenerError("read msg", err)
 			break
 		}
 
 		msg, err := l.replicator.WaitForReplicationMessage(ctx)
 		if err != nil {
-			l.errChannel <- newListenerError("WaitForReplicationMessage()", err)
+			l.errChannel <- error_walListner.NewListenerError("WaitForReplicationMessage()", err)
 			continue
 		}
 
