@@ -9,12 +9,20 @@ import (
 )
 
 type Config struct {
-	Database postgres.DatabaseCfg `mapstructure:"db"`
-	Listener Listener             `mapstructure:"listener"`
+	Database  postgres.DatabaseCfg `mapstructure:"db"`
+	Listener  Listener             `mapstructure:"listener"`
+	LoggerCfg LoggerCfg
 }
 
 type Listener struct {
 	RefreshConnection time.Duration
+}
+
+// LoggerCfg path of the logger config.
+type LoggerCfg struct {
+	Caller bool
+	Level  string
+	Format string
 }
 
 func NewConfig() *Config {

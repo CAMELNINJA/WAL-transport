@@ -23,7 +23,7 @@ const errorBufferSize = 100
 const pgOutputPlugin = "pgoutput"
 
 type publisher interface {
-	Publish(string, models.Event) error
+	Publish(string, any) error
 }
 
 type parser interface {
@@ -67,16 +67,12 @@ func NewWalListener(
 	slotName string,
 	repo repository,
 	repl replication,
-	publ publisher,
-	parser parser,
 ) *Listener {
 	return &Listener{
 		log:        log,
 		slotName:   slotName,
-		publisher:  publ,
 		repository: repo,
 		replicator: repl,
-		parser:     parser,
 		errChannel: make(chan error, errorBufferSize),
 	}
 }
@@ -123,7 +119,7 @@ func (l *Listener) Process(ctx context.Context) error {
 
 	go l.Stream(ctx)
 
-	refresh := time.NewTicker(l.cfg.Listener.RefreshConnection)
+	refresh := time.NewTicker(time.Duration(30))
 	defer refresh.Stop()
 
 	var svcErr *error_walListner.ServiceErr
@@ -193,34 +189,35 @@ func (l *Listener) Stream(ctx context.Context) {
 		if msg != nil {
 			if msg.WalMessage != nil {
 				l.log.WithField("wal", msg.WalMessage.WalStart).Debugln("receive wal message")
+				fmt.Println(msg.WalMessage)
+				// if err := l.parser.ParseWalMessage(msg.WalMessage.WalData, tx); err != nil {
+				// 	l.log.WithError(err).Errorln("msg parse failed")
+				// 	l.errChannel <- fmt.Errorf("unmarshal wal message: %w", err)
 
-				if err := l.parser.ParseWalMessage(msg.WalMessage.WalData, tx); err != nil {
-					l.log.WithError(err).Errorln("msg parse failed")
-					l.errChannel <- fmt.Errorf("unmarshal wal message: %w", err)
-
-					continue
-				}
-
+				// 	continue
+				// }
+				//TODO: interfase work change wal logs to json file
 				if tx.CommitTime != nil {
-					natsEvents := tx.CreateEventsWithFilter(l.cfg.Listener.Filter.Tables)
 
-					for _, event := range natsEvents {
-						subjectName := event.SubjectName(l.cfg)
+					// natsEvents := tx.CreateEventsWithFilter(l.cfg.Listener.Filter.Tables)
 
-						if err = l.publisher.Publish(subjectName, event); err != nil {
-							l.errChannel <- fmt.Errorf("publish message: %w", err)
-							continue
-						}
+					// for _, event := range natsEvents {
+					// 	subjectName := event.SubjectName(l.cfg)
 
-						// publishedEvents.With(prometheus.Labels{"subject": subjectName, "table": event.Table}).Inc()
+					// 	if err = l.publisher.Publish(subjectName, event); err != nil {
+					// 		l.errChannel <- fmt.Errorf("publish message: %w", err)
+					// 		continue
+					// 	}
 
-						l.log.WithFields(logrus.Fields{
-							"subject": subjectName,
-							"action":  event.Action,
-							"table":   event.Table,
-							"lsn":     l.readLSN(),
-						}).Infoln("event was sent")
-					}
+					// 	// publishedEvents.With(prometheus.Labels{"subject": subjectName, "table": event.Table}).Inc()
+
+					// 	l.log.WithFields(logrus.Fields{
+					// 		"subject": subjectName,
+					// 		"action":  event.Action,
+					// 		"table":   event.Table,
+					// 		"lsn":     l.readLSN(),
+					// 	}).Infoln("event was sent")
+					// }
 
 					tx.Clear()
 				}
