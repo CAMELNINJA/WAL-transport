@@ -42,7 +42,7 @@ const (
 	ToastDataType byte = 'u'
 )
 
-var postgresEpoch = time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
+var PostgresEpoch = time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
 
 // Logical Replication Message Formats.
 // https://postgrespro.ru/docs/postgrespro/10/protocol-logicalrep-message-formats#

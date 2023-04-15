@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/CAMELNINGA/cdc-postgres/pkg/postgres"
+	"github.com/CAMELNINGA/cdc-postgres.git/pkg/postgres"
 	"github.com/spf13/viper"
 )
 

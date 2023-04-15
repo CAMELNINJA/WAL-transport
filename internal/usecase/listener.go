@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/CAMELNINGA/cdc-postgres/config"
-	"github.com/CAMELNINGA/cdc-postgres/internal/models"
-	error_walListner "github.com/CAMELNINGA/cdc-postgres/pkg/error_walListner"
+	"github.com/CAMELNINGA/cdc-postgres.git/config"
+	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
+	error_walListner "github.com/CAMELNINGA/cdc-postgres.git/pkg/error_walListner"
 
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
@@ -67,12 +67,14 @@ func NewWalListener(
 	slotName string,
 	repo repository,
 	repl replication,
+	parser parser,
 ) *Listener {
 	return &Listener{
 		log:        log,
 		slotName:   slotName,
 		repository: repo,
 		replicator: repl,
+		parser:     parser,
 		errChannel: make(chan error, errorBufferSize),
 	}
 }
@@ -189,13 +191,14 @@ func (l *Listener) Stream(ctx context.Context) {
 		if msg != nil {
 			if msg.WalMessage != nil {
 				l.log.WithField("wal", msg.WalMessage.WalStart).Debugln("receive wal message")
-				fmt.Println(msg.WalMessage)
-				// if err := l.parser.ParseWalMessage(msg.WalMessage.WalData, tx); err != nil {
-				// 	l.log.WithError(err).Errorln("msg parse failed")
-				// 	l.errChannel <- fmt.Errorf("unmarshal wal message: %w", err)
 
-				// 	continue
-				// }
+				if err := l.parser.ParseWalMessage(msg.WalMessage.WalData, tx); err != nil {
+					l.log.WithError(err).Errorln("msg parse failed")
+					l.errChannel <- fmt.Errorf("unmarshal wal message: %w", err)
+
+					continue
+				}
+				fmt.Println(tx)
 				//TODO: interfase work change wal logs to json file
 				if tx.CommitTime != nil {
 

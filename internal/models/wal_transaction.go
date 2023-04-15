@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -9,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
-	error_walListner "github.com/CAMELNINGA/cdc-postgres/pkg/error_walListner"
+	error_walListner "github.com/CAMELNINGA/cdc-postgres.git/pkg/error_walListner"
 )
 
 // ActionKind kind of action on WAL message.
@@ -51,6 +52,10 @@ type WalTransaction struct {
 	Actions       []ActionData
 }
 
+func (wt *WalTransaction) String() string {
+	return fmt.Sprintf("BeginTime %v Actions %v ", wt.BeginTime, wt.Actions)
+}
+
 // NewWalTransaction create and initialize new WAL transaction.
 func NewWalTransaction() *WalTransaction {
 	return &WalTransaction{
@@ -78,12 +83,20 @@ type ActionData struct {
 	NewColumns []Column
 }
 
+func (a ActionData) String() string {
+	return fmt.Sprintf("\n Schema %s Table %s  Kind %s \n NewColumns  %v ", a.Schema, a.Table, a.Kind, a.NewColumns)
+}
+
 // Column of the table with which changes occur.
 type Column struct {
-	name      string
-	value     any
-	valueType int
-	isKey     bool
+	Name      string
+	Value     any
+	ValueType int
+	IsKey     bool
+}
+
+func (c Column) String() string {
+	return fmt.Sprintf(" Name %s Value %v ValueType %d IsKey %t", c.Name, c.Value, c.ValueType, c.IsKey)
 }
 
 // AssertValue converts bytes to a specific type depending
@@ -95,7 +108,7 @@ func (c *Column) AssertValue(src []byte) {
 	)
 
 	if src == nil {
-		c.value = nil
+		c.Value = nil
 		return
 	}
 
@@ -106,7 +119,7 @@ func (c *Column) AssertValue(src []byte) {
 		timestampWithTZLayout = "2006-01-02 15:04:05.999999999-07"
 	)
 
-	switch c.valueType {
+	switch c.ValueType {
 	case BoolOID:
 		val, err = strconv.ParseBool(strSrc)
 	case Int2OID, Int4OID:
@@ -133,16 +146,16 @@ func (c *Column) AssertValue(src []byte) {
 		err = json.Unmarshal(src, &m)
 		val = m
 	default:
-		logrus.WithFields(logrus.Fields{"pgtype": c.valueType, "column_name": c.name}).Warnln("unknown oid type")
+		logrus.WithFields(logrus.Fields{"pgtype": c.ValueType, "column_name": c.Name}).Warnln("unknown oid type")
 		val = strSrc
 	}
 
 	if err != nil {
-		logrus.WithError(err).WithFields(logrus.Fields{"pgtype": c.valueType, "column_name": c.name}).
+		logrus.WithError(err).WithFields(logrus.Fields{"pgtype": c.ValueType, "column_name": c.Name}).
 			Errorln("column data parse error")
 	}
 
-	c.value = val
+	c.Value = val
 }
 
 // Clear transaction data.
@@ -169,9 +182,9 @@ func (w *WalTransaction) CreateActionData(relationID int32, oldRows []TupleData,
 
 	for num, row := range oldRows {
 		column := Column{
-			name:      rel.Columns[num].name,
-			valueType: rel.Columns[num].valueType,
-			isKey:     rel.Columns[num].isKey,
+			Name:      rel.Columns[num].Name,
+			ValueType: rel.Columns[num].ValueType,
+			IsKey:     rel.Columns[num].IsKey,
 		}
 		column.AssertValue(row.Value)
 		oldColumns = append(oldColumns, column)
@@ -182,15 +195,15 @@ func (w *WalTransaction) CreateActionData(relationID int32, oldRows []TupleData,
 	var newColumns []Column
 	for num, row := range newRows {
 		column := Column{
-			name:      rel.Columns[num].name,
-			valueType: rel.Columns[num].valueType,
-			isKey:     rel.Columns[num].isKey,
+			Name:      rel.Columns[num].Name,
+			ValueType: rel.Columns[num].ValueType,
+			IsKey:     rel.Columns[num].IsKey,
 		}
 		column.AssertValue(row.Value)
 		newColumns = append(newColumns, column)
 	}
 	a.NewColumns = newColumns
-
+	fmt.Println(a)
 	return a, nil
 }
 
