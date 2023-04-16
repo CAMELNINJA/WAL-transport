@@ -53,6 +53,9 @@ type WalTransaction struct {
 }
 
 func (wt *WalTransaction) String() string {
+	if wt.CommitTime != nil {
+		return fmt.Sprintf("CommitTime %v Actions %v ", wt.CommitTime, wt.Actions)
+	}
 	return fmt.Sprintf("BeginTime %v Actions %v ", wt.BeginTime, wt.Actions)
 }
 
@@ -207,8 +210,8 @@ func (w *WalTransaction) CreateActionData(relationID int32, oldRows []TupleData,
 	return a, nil
 }
 
-// // CreateEventsWithFilter filter WAL message by table,
-// // action and create events for each value.
+// CreateEventsWithFilter filter WAL message by table,
+// action and create events for each value.
 // func (w *WalTransaction) CreateEventsWithFilter(tableMap map[string][]string) []Event {
 // 	var events []Event
 
