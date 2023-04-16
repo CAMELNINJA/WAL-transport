@@ -47,6 +47,10 @@ type repository interface {
 	Close() error
 }
 
+type saver interface {
+	SaveData(ctx context.Context, tx *models.WalTransaction) error
+}
+
 // Listener main service struct.
 type Listener struct {
 	cfg        config.Config
@@ -58,6 +62,7 @@ type Listener struct {
 	repository repository
 	parser     parser
 	lsn        uint64
+	saver      saver
 	errChannel chan error
 }
 
@@ -68,6 +73,7 @@ func NewWalListener(
 	repo repository,
 	repl replication,
 	parser parser,
+	saver saver,
 ) *Listener {
 	return &Listener{
 		log:        log,
@@ -75,6 +81,7 @@ func NewWalListener(
 		repository: repo,
 		replicator: repl,
 		parser:     parser,
+		saver:      saver,
 		errChannel: make(chan error, errorBufferSize),
 	}
 }
@@ -97,7 +104,7 @@ func (l *Listener) Process(ctx context.Context) error {
 		logger.WithError(err).Warnln("skip create publication")
 	}
 
-	slotIsExists, err := l.slotIsExists()
+	slotIsExists, err := l.slotIsExists(ctx)
 	if err != nil {
 		return fmt.Errorf("slot is exists: %w", err)
 	}
@@ -198,10 +205,22 @@ func (l *Listener) Stream(ctx context.Context) {
 
 					continue
 				}
-				fmt.Println(tx)
+
+				l.log.Info(tx)
 				//TODO: interfase work change wal logs to json file
 				if tx.CommitTime != nil {
+					if err := l.saver.SaveData(ctx, tx); err != nil {
+						l.log.WithError(err).Errorln("msg parse failed")
+						l.errChannel <- fmt.Errorf("save message: %w", err)
 
+						continue
+					}
+					if err := l.saver.SaveData(ctx, tx); err != nil {
+						l.log.WithError(err).Errorln("msg parse failed")
+						l.errChannel <- fmt.Errorf("save message: %w", err)
+
+						continue
+					}
 					// natsEvents := tx.CreateEventsWithFilter(l.cfg.Listener.Filter.Tables)
 
 					// for _, event := range natsEvents {
@@ -330,7 +349,7 @@ func (l *Listener) readLSN() uint64 {
 }
 
 // slotIsExists checks whether a slot has already been created and if it has been created uses it.
-func (l *Listener) slotIsExists() (bool, error) {
+func (l *Listener) slotIsExists(ctx context.Context) (bool, error) {
 	restartLSNStr, err := l.repository.GetSlotLSN(l.slotName)
 	if err != nil {
 		return false, err
