@@ -8,6 +8,7 @@ import (
 
 	"github.com/CAMELNINGA/cdc-postgres.git/config"
 	"github.com/CAMELNINGA/cdc-postgres.git/internal/parser"
+	querybuilder "github.com/CAMELNINGA/cdc-postgres.git/internal/query_builder"
 	"github.com/CAMELNINGA/cdc-postgres.git/internal/repository"
 	"github.com/CAMELNINGA/cdc-postgres.git/internal/usecase"
 	"github.com/CAMELNINGA/cdc-postgres.git/pkg/postgres"
@@ -29,7 +30,10 @@ func initLogger(cfg config.LoggerCfg, version string) *logrus.Entry {
 	logger.SetReportCaller(cfg.Caller)
 
 	if cfg.Format == "json" {
-		logger.SetFormatter(&logrus.JSONFormatter{})
+		logger.SetFormatter(&logrus.TextFormatter{
+			ForceColors:   true,
+			FullTimestamp: true,
+		})
 	}
 
 	var level logrus.Level
@@ -56,7 +60,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	config := &config.Config{
+	cfg := &config.Config{
 		Database: postgres.DatabaseCfg{
 			Host:     "localhost",
 			Port:     5433,
@@ -73,13 +77,29 @@ func main() {
 			RefreshConnection: 30,
 		},
 	}
-	logger := initLogger(config.LoggerCfg, "1.0.0")
-	pgConf := config.Database
+	masterCfg := &config.Config{
+		Database: postgres.DatabaseCfg{
+			Host:     "localhost",
+			Port:     5434,
+			Name:     "postgres",
+			User:     "postgres",
+			Password: "pass",
+		},
+	}
+
+	logger := initLogger(cfg.LoggerCfg, "1.0.0")
+	pgConf := cfg.Database
 	conn, rConn, err := postgres.InitPgxConnections(pgConf)
 	if err != nil {
 		logger.Error(err)
 		return
 	}
+	masterConn, err := postgres.InitMasterConnection(ctx, masterCfg.Database)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	collector := usecase.NewCollector(querybuilder.NewQueryBuilder(logger), masterConn)
 
 	service := usecase.NewWalListener(
 		logger,
@@ -87,6 +107,7 @@ func main() {
 		repository.NewRepository(conn),
 		rConn,
 		parser.NewBinaryParser(binary.BigEndian),
+		collector,
 	)
 	if err := service.Process(ctx); err != nil {
 		logger.Error("service process: %w", err)
