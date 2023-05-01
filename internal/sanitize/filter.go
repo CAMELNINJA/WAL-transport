@@ -13,9 +13,9 @@ type FilterHandler struct {
 
 // Handle checks if the request contains the filter and removes it if it does
 // Todo filter tables and columns
-func (h *FilterHandler) Handle(request models.ActionData) models.ActionData {
+func (h *FilterHandler) Handle(request *models.ActionData) *models.ActionData {
 
-	if h.Table != "" || h.Table == request.Table {
+	if h.Table != "" || h.Table == request.Table || h.Table == "*" {
 		if h.filterColumns != nil {
 
 			for i, v := range request.NewColumns {
@@ -25,9 +25,23 @@ func (h *FilterHandler) Handle(request models.ActionData) models.ActionData {
 				}
 			}
 
+			for i, v := range request.OldColumns {
+				_, prs := h.filterColumns[v.Name]
+				if prs {
+					request.OldColumns = append(request.OldColumns[:i], request.OldColumns[i+1:]...)
+				}
+			}
+
 		} else {
 			request.NewColumns = nil
 		}
 	}
-	return h.BaseHandler.Handle(request)
+	if len(request.NewColumns) == 0 && len(request.OldColumns) == 0 {
+		return nil
+	}
+
+	if h.BaseHandler.nextHandler != nil {
+		return h.BaseHandler.Handle(request)
+	}
+	return request
 }

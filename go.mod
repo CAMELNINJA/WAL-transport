@@ -8,10 +8,12 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
+	gotest.tools/v3 v3.4.0
 )
 
 require (
 	github.com/cockroachdb/apd v1.1.0 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.0 // indirect

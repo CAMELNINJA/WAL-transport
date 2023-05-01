@@ -1,0 +1,48 @@
+{
+    "log_level": "info",
+    "sender":[
+        {   
+            "host": "localhost",
+            "port": 8080,
+            
+            "db":{
+                "type": "postgres",
+                "host": "localhost",
+                "port": 5432,
+                "user": "postgres",
+                "password": "postgres",
+                "database": "postgres"
+            },
+            "mq":[
+                {
+                    "type": "kafka",
+                    "host": "localhost",
+                    "port": 9092,
+                    "topic": "test"
+                },{
+                    "type":"nats",
+                    "host":"localhost",
+                    "port":4222,
+                    "binding":"test"
+                }
+            ],
+            "sanitase":[
+                {
+                    "schema": "*",
+                    "table": [{
+                        "name": "test",
+                        "columns": [
+                            {
+                                "name": "id"
+                            },
+                            {
+                                "name": "name",
+                                "new_name": "name2"
+                            }
+                        ]
+                    }]
+                }
+            ]
+        }
+    ]
+}

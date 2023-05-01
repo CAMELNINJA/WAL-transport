@@ -87,7 +87,7 @@ type ActionData struct {
 }
 
 func (a ActionData) String() string {
-	return fmt.Sprintf("\n Schema %s Table %s  Kind %s \n NewColumns  %v ", a.Schema, a.Table, a.Kind, a.NewColumns)
+	return fmt.Sprintf("\n Schema %s Table %s  Kind %s \n NewColumns  %v \n OldColums %v", a.Schema, a.Table, a.Kind, a.NewColumns, a.OldColumns)
 }
 
 // Column of the table with which changes occur.

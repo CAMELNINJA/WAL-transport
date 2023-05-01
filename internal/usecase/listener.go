@@ -205,7 +205,7 @@ func (l *Listener) Stream(ctx context.Context) {
 
 					continue
 				}
-
+				l.log.Info(tx.RelationStore)
 				l.log.Info(tx)
 				//TODO: interfase work change wal logs to json file
 				if tx.CommitTime != nil {

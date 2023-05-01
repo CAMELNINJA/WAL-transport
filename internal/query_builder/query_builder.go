@@ -42,15 +42,24 @@ func prepareQueryInsert(tx *models.ActionData) (string, []interface{}, error) {
 }
 
 func prepareQueryUpdate(tx *models.ActionData) (string, []interface{}, error) {
-	var values []interface{}
-	var columns []string
+	query := sq.Update(tx.Table)
 	for _, v := range tx.NewColumns {
-		columns = append(columns, v.Name)
-		values = append(values, v.Value)
+		query = query.Set(v.Name, v.Value)
 	}
-	return sq.Update(tx.Table).SetMap(sq.Eq{"id": 1}).ToSql()
+	for _, v := range tx.OldColumns {
+		query = query.Where(sq.Eq{v.Name: v.Value})
+	}
+
+	return query.ToSql()
 }
 
 func prepareQueryDelete(tx *models.ActionData) (string, []interface{}, error) {
-	return sq.Delete(tx.Table).Where(sq.Eq{"id": 1}).ToSql()
+	query := sq.Delete(tx.Table)
+	if len(tx.OldColumns) == 0 {
+		return "", []interface{}{}, fmt.Errorf("not build")
+	}
+	for _, v := range tx.OldColumns {
+		query = query.Where(sq.Eq{v.Name: v.Value})
+	}
+	return query.ToSql()
 }
