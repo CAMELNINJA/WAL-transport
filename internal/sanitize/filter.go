@@ -8,6 +8,7 @@ import (
 type FilterHandler struct {
 	BaseHandler
 	Table         string
+	Schema        map[string]string
 	filterColumns map[string]string
 }
 
@@ -15,7 +16,14 @@ type FilterHandler struct {
 // Todo filter tables and columns
 func (h *FilterHandler) Handle(request *models.ActionData) *models.ActionData {
 
-	if h.Table != "" || h.Table == request.Table || h.Table == "*" {
+	if h.Table == request.Table || h.Table == "*" {
+		if h.Schema != nil {
+			_, prs := h.Schema[request.Schema]
+			if prs {
+				return nil
+			}
+
+		}
 		if h.filterColumns != nil {
 
 			for i, v := range request.NewColumns {
@@ -32,8 +40,10 @@ func (h *FilterHandler) Handle(request *models.ActionData) *models.ActionData {
 				}
 			}
 
+		} else if h.Schema != nil {
+			return request
 		} else {
-			request.NewColumns = nil
+			return nil
 		}
 	}
 	if len(request.NewColumns) == 0 && len(request.OldColumns) == 0 {
