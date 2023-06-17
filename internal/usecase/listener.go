@@ -88,7 +88,7 @@ func NewWalListener(
 
 const (
 	protoVersion    = "proto_version '1'"
-	publicationName = "wal-listener"
+	publicationName = "wal-transport"
 )
 
 // Process is main service entry point.

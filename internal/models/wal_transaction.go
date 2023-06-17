@@ -210,54 +210,46 @@ func (w *WalTransaction) CreateActionData(relationID int32, oldRows []TupleData,
 	return a, nil
 }
 
-// CreateEventsWithFilter filter WAL message by table,
-// action and create events for each value.
-// func (w *WalTransaction) CreateEventsWithFilter(tableMap map[string][]string) []Event {
-// 	var events []Event
+// CreateMessges message by table,
+// action and create messages for each value.
+func (w *WalTransaction) CreateMessges() []Message {
+	var messages []Message
 
-// 	for _, item := range w.Actions {
-// 		dataOld := make(map[string]any)
-// 		for _, val := range item.OldColumns {
-// 			dataOld[val.name] = val.value
-// 		}
+	for _, item := range w.Actions {
+		dataOld := make(map[string]any)
+		for _, val := range item.OldColumns {
+			dataOld[val.Name] = val.Value
+		}
 
-// 		data := make(map[string]any)
-// 		for _, val := range item.NewColumns {
-// 			data[val.name] = val.value
-// 		}
+		data := make(map[string]any)
+		for _, val := range item.NewColumns {
+			data[val.Name] = val.Value
+		}
 
-// 		x := uuid.New()
-// 		event := Event{
-// 			ID:        x,
-// 			Schema:    item.Schema,
-// 			Table:     item.Table,
-// 			Action:    item.Kind.string(),
-// 			DataOld:   dataOld,
-// 			Data:      data,
-// 			EventTime: *w.CommitTime,
-// 		}
+		x := uuid.New()
+		message := Message{
+			ID:        x,
+			Schema:    item.Schema,
+			Table:     item.Table,
+			Action:    item.Kind.string(),
+			DataOld:   dataOld,
+			Data:      data,
+			EventTime: *w.CommitTime,
+		}
+		messages = append(messages, message)
+		// filterSkippedEvents.With(prometheus.Labels{"table": item.Table}).Inc()
 
-// 		actions, validTable := tableMap[item.Table]
+		// logrus.WithFields(
+		// 	logrus.Fields{
+		// 		"schema": item.Schema,
+		// 		"table":  item.Table,
+		// 		"action": item.Kind,
+		// 	}).
+		// 	Infoln("wal-message was skipped by filter")
+	}
 
-// 		validAction := inArray(actions, item.Kind.string())
-// 		if validTable && validAction {
-// 			events = append(events, event)
-// 			continue
-// 		}
-
-// 		// filterSkippedEvents.With(prometheus.Labels{"table": item.Table}).Inc()
-
-// 		logrus.WithFields(
-// 			logrus.Fields{
-// 				"schema": item.Schema,
-// 				"table":  item.Table,
-// 				"action": item.Kind,
-// 			}).
-// 			Infoln("wal-message was skipped by filter")
-// 	}
-
-// 	return events
-// }
+	return messages
+}
 
 // inArray checks whether the value is in an array.
 func inArray(arr []string, value string) bool {

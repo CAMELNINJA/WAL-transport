@@ -9,12 +9,13 @@ type ReplaceHandler struct {
 	BaseHandler
 	oldTable       string
 	newTable       string
+	Schema         map[string]string
 	replaseColumns map[string]string
 }
 
 // Handle checks if the request contains the old value and replaces it with the new one if it does
 func (h *ReplaceHandler) Handle(request *models.ActionData) *models.ActionData {
-	if h.oldTable != "" || h.oldTable == request.Table || h.oldTable == "*" {
+	if h.oldTable == request.Table || h.oldTable == "*" {
 		request.Table = h.newTable
 		if h.replaseColumns != nil {
 			for _, v := range request.NewColumns {

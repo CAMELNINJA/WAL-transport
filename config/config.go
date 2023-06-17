@@ -12,6 +12,7 @@ type Config struct {
 	Database  postgres.DatabaseCfg `mapstructure:"db"`
 	Listener  Listener             `mapstructure:"listener"`
 	LoggerCfg LoggerCfg
+	Kafka     Kafka
 }
 
 type Listener struct {
@@ -23,6 +24,12 @@ type LoggerCfg struct {
 	Caller bool
 	Level  string
 	Format string
+}
+
+type Kafka struct {
+	Brokers []string
+	Topic   string
+	GroupID string
 }
 
 func NewConfig() *Config {
