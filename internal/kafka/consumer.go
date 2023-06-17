@@ -40,7 +40,7 @@ func (k kafk) Listen(ctx context.Context, usecase usecase) error {
 	}
 }
 
-func (k kafk) ListenConfig(config config) error {
+func (k kafk) ListenConfig(ctx context.Context, ctxconfig config) error {
 	if k.consumer == nil {
 		return erorwallistner.ErrNotConnectedKafaConsumer
 	}
@@ -50,7 +50,7 @@ func (k kafk) ListenConfig(config config) error {
 			return err
 		}
 
-		var messages models.Message
+		var messages config.Config
 		if err := json.Unmarshal(msg.Value, &messages); err != nil {
 			fmt.Println(err)
 			continue

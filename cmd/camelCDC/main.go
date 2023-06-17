@@ -68,11 +68,7 @@ func main() {
 			User:     "postgres",
 			Password: "pass",
 		},
-		LoggerCfg: config.LoggerCfg{
-			Caller: false,
-			Level:  "info",
-			Format: "json",
-		},
+
 		Listener: config.Listener{
 			RefreshConnection: 30,
 		},

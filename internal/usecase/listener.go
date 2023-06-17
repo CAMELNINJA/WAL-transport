@@ -23,7 +23,7 @@ const errorBufferSize = 100
 const pgOutputPlugin = "pgoutput"
 
 type publisher interface {
-	Publish(string, any) error
+	Publish(string, models.Message) error
 }
 
 type parser interface {
@@ -62,7 +62,6 @@ type Listener struct {
 	repository repository
 	parser     parser
 	lsn        uint64
-	saver      saver
 	errChannel chan error
 }
 
@@ -73,7 +72,7 @@ func NewWalListener(
 	repo repository,
 	repl replication,
 	parser parser,
-	saver saver,
+	publisher publisher,
 ) *Listener {
 	return &Listener{
 		log:        log,
@@ -81,7 +80,7 @@ func NewWalListener(
 		repository: repo,
 		replicator: repl,
 		parser:     parser,
-		saver:      saver,
+		publisher:  publisher,
 		errChannel: make(chan error, errorBufferSize),
 	}
 }
