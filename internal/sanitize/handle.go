@@ -25,3 +25,7 @@ func (h *BaseHandler) Handle(request *models.ActionData) *models.ActionData {
 	}
 	return request
 }
+
+func NewSanitizeHandler() Handler {
+	return &BaseHandler{}
+}

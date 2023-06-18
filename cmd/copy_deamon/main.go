@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 
 	"github.com/CAMELNINGA/cdc-postgres.git/config"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/kafka"
+	"github.com/CAMELNINGA/cdc-postgres.git/internal/app"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,25 +21,32 @@ func main() {
 		panic(err)
 	}
 	logger := config.InitLogger(baseConfig.LoggerCfg, Version)
-	logger.Info("Starting copy deamon,  version: %s\n", Version)
+	logger.Info(fmt.Printf("Starting copy deamon,  version: %s\n", Version))
+	cfgChan := make(chan config.Config)
+	defer close(cfgChan)
 	if baseConfig.IsKatka {
 		logger.Info("Starting kafka producer")
-		if err := kafkaRun(ctx, logger, baseConfig.Kafka); err != nil {
+		if err := app.KafkaRun(ctx, logger, baseConfig.Kafka, cfgChan); err != nil {
 			logger.Fatal(err)
 		}
 	}
 }
 
-func kafkaRun(ctx context.Context, logger *logrus.Entry, cfg config.Kafka) error {
-	logger.Info("Starting kafka producer")
-	var b kafka.Bits
-	b = kafka.Set(b, kafka.Consumer)
-	kafka := kafka.NewKafka(
-		kafka.WithBrokers(cfg.Brokers),
-		kafka.WithTopic(cfg.Topic),
-		kafka.WithFlags(b),
-		kafka.WithGroupID(cfg.GroupID),
-	)
+func run(ctx context.Context, logger *logrus.Entry, <-cfg chan config.Config) error {
+	logger.Info("Starting copy deamon")
+	
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case cfg := <-cfg:
+			copyCtx, cancel := context.WithCancel(ctx)
+			defer cancel()
+			if err := app.RunCopyDeamon(copyCtx,logger,cfg); err != nil {
+				return err
+			}
 
-	return nil
+		}
+	}
+	
 }

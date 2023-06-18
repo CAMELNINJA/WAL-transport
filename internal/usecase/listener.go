@@ -11,6 +11,7 @@ import (
 
 	"github.com/CAMELNINGA/cdc-postgres.git/config"
 	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
+	"github.com/CAMELNINGA/cdc-postgres.git/internal/sanitize"
 	error_walListner "github.com/CAMELNINGA/cdc-postgres.git/pkg/error_walListner"
 
 	"github.com/jackc/pgx"
@@ -61,6 +62,7 @@ type Listener struct {
 	replicator replication
 	repository repository
 	parser     parser
+	sanitizer  sanitize.Handler
 	lsn        uint64
 	errChannel chan error
 }
@@ -73,6 +75,7 @@ func NewWalListener(
 	repl replication,
 	parser parser,
 	publisher publisher,
+	sanitizer sanitize.Handler,
 ) *Listener {
 	return &Listener{
 		log:        log,
@@ -81,6 +84,7 @@ func NewWalListener(
 		replicator: repl,
 		parser:     parser,
 		publisher:  publisher,
+		sanitizer:  sanitizer,
 		errChannel: make(chan error, errorBufferSize),
 	}
 }
@@ -208,18 +212,7 @@ func (l *Listener) Stream(ctx context.Context) {
 				l.log.Info(tx)
 				//TODO: interfase work change wal logs to json file
 				if tx.CommitTime != nil {
-					if err := l.saver.SaveData(ctx, tx); err != nil {
-						l.log.WithError(err).Errorln("msg parse failed")
-						l.errChannel <- fmt.Errorf("save message: %w", err)
 
-						continue
-					}
-					if err := l.saver.SaveData(ctx, tx); err != nil {
-						l.log.WithError(err).Errorln("msg parse failed")
-						l.errChannel <- fmt.Errorf("save message: %w", err)
-
-						continue
-					}
 					// natsEvents := tx.CreateEventsWithFilter(l.cfg.Listener.Filter.Tables)
 
 					// for _, event := range natsEvents {

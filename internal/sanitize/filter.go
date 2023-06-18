@@ -55,3 +55,32 @@ func (h *FilterHandler) Handle(request *models.ActionData) *models.ActionData {
 	}
 	return request
 }
+
+type FilterOpts func(*FilterHandler)
+
+func WithFilterTable(table string) FilterOpts {
+	return func(h *FilterHandler) {
+		h.Table = table
+	}
+}
+
+func WithFilterSchema(schema map[string]string) FilterOpts {
+	return func(h *FilterHandler) {
+		h.Schema = schema
+	}
+}
+
+func WithFilterColumns(filterColumns map[string]string) FilterOpts {
+	return func(h *FilterHandler) {
+		h.filterColumns = filterColumns
+	}
+}
+
+func NewFilterHandler(opts ...FilterOpts) Handler {
+	var h FilterHandler
+
+	for _, opt := range opts {
+		opt(&h)
+	}
+	return &h
+}

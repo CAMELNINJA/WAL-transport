@@ -26,5 +26,37 @@ func (h *ReplaceHandler) Handle(request *models.ActionData) *models.ActionData {
 			}
 		}
 	}
-	return h.BaseHandler.Handle(request)
+	if h.BaseHandler.nextHandler != nil {
+		return h.BaseHandler.Handle(request)
+	}
+	return request
+}
+
+type ReplaceOpts func(*ReplaceHandler)
+
+func NewReplaceHandler(opts ...ReplaceOpts) Handler {
+	handler := &ReplaceHandler{}
+	for _, opt := range opts {
+		opt(handler)
+	}
+	return handler
+}
+
+func WithReplaceTable(oldTable string, newTable string) ReplaceOpts {
+	return func(handler *ReplaceHandler) {
+		handler.oldTable = oldTable
+		handler.newTable = newTable
+	}
+}
+
+func WithReplaceColumns(replaseColumns map[string]string) ReplaceOpts {
+	return func(handler *ReplaceHandler) {
+		handler.replaseColumns = replaseColumns
+	}
+}
+
+func WithReplaceSchema(schema map[string]string) ReplaceOpts {
+	return func(handler *ReplaceHandler) {
+		handler.Schema = schema
+	}
 }

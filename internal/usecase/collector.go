@@ -42,7 +42,8 @@ func checkTransaction(posTX transaction, err error) error {
 
 }
 
-func (c *collector) SaveData(ctx context.Context, tx *models.WalTransaction) error {
+func (c *collector) SaveData(ctx context.Context, message models.Message) error {
+	tx := message.ToWalTransaction()
 	posTX, err := repo.NewTx(ctx, c.connections)
 	if err != nil {
 		return err

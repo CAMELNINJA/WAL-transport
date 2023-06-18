@@ -228,13 +228,13 @@ func (w *WalTransaction) CreateMessges() []Message {
 
 		x := uuid.New()
 		message := Message{
-			ID:        x,
-			Schema:    item.Schema,
-			Table:     item.Table,
-			Action:    item.Kind.string(),
-			DataOld:   dataOld,
-			Data:      data,
-			EventTime: *w.CommitTime,
+			ID:         x,
+			Schema:     item.Schema,
+			Table:      item.Table,
+			Action:     item.Kind.string(),
+			DataOld:    dataOld,
+			Data:       data,
+			CommitTime: *w.CommitTime,
 		}
 		messages = append(messages, message)
 		// filterSkippedEvents.With(prometheus.Labels{"table": item.Table}).Inc()

@@ -6,10 +6,16 @@ import (
 	"github.com/CAMELNINGA/cdc-postgres.git/pkg/postgres"
 )
 
+const (
+	FilterType  = "filter"
+	ReplaseType = "replase"
+)
+
 type Config struct {
 	Database postgres.DatabaseCfg
 	Listener Listener
 	Kafka    Kafka
+	Sanitize []Sanitize
 }
 
 type Listener struct {
@@ -28,4 +34,12 @@ type Kafka struct {
 	Brokers []string `long:"brokers" env:"BROKERS" env-delim:"," description:"Kafka brokers"`
 	Topic   string   `long:"topic" env:"TOPIC" description:"Kafka topic"`
 	GroupID string   `long:"group-id" env:"GROUP_ID" description:"Kafka group id"`
+}
+
+type Sanitize struct {
+	Type     string            `long:"type" env:"TYPE" description:"Sanitize type"`
+	Table    string            `long:"table" env:"TABLE" description:"Table name"`
+	OldTable string            `long:"old-table" env:"OLD_TABLE" description:"Old table name"`
+	Schema   map[string]string `long:"schema" env:"SCHEMA" description:"Schema name"`
+	Columns  map[string]string `long:"filter-columns" env:"FILTER_COLUMNS" description:"Filter columns"`
 }
