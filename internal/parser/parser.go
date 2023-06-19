@@ -120,7 +120,7 @@ func (p *BinaryParser) ParseWalMessage(msg []byte, tx *models.WalTransaction) er
 			return fmt.Errorf("create action data: %w", err)
 		}
 
-		tx.Actions = append(tx.Actions, action)
+		tx.Actions = append(tx.Actions, &action)
 	case models.UpdateMsgType:
 		upd := p.getUpdateMsg()
 
@@ -141,7 +141,7 @@ func (p *BinaryParser) ParseWalMessage(msg []byte, tx *models.WalTransaction) er
 			return fmt.Errorf("create action data: %w", err)
 		}
 
-		tx.Actions = append(tx.Actions, action)
+		tx.Actions = append(tx.Actions, &action)
 	case models.DeleteMsgType:
 		del := p.getDeleteMsg()
 
@@ -162,7 +162,7 @@ func (p *BinaryParser) ParseWalMessage(msg []byte, tx *models.WalTransaction) er
 			return fmt.Errorf("create action data: %w", err)
 		}
 
-		tx.Actions = append(tx.Actions, action)
+		tx.Actions = append(tx.Actions, &action)
 	default:
 		return fmt.Errorf("%w : %s", error_walListner.ErrUnknownMessageType, []byte{p.msgType})
 	}

@@ -208,30 +208,41 @@ func (l *Listener) Stream(ctx context.Context) {
 
 					continue
 				}
+				var newActions []*models.ActionData
+				for _, actions := range tx.Actions {
+					newActions = append(newActions, l.sanitizer.Handle(actions))
+				}
+				tx.Actions = newActions
 				l.log.Info(tx.RelationStore)
 				l.log.Info(tx)
 				//TODO: interfase work change wal logs to json file
 				if tx.CommitTime != nil {
+					l.log.WithField("commit_time", tx.CommitTime).Debugln("commit transaction")
+					message := tx.CreateMessges()
+					for _, event := range message {
+						subjectName := event.SubjectName()
+						if err = l.publisher.Publish(subjectName, event); err != nil {
+							l.errChannel <- fmt.Errorf("publish message: %w", err)
+							continue
+						}
 
-					// natsEvents := tx.CreateEventsWithFilter(l.cfg.Listener.Filter.Tables)
+						// for _, event := range natsEvents {
+						// 	subjectName := event.SubjectName(l.cfg)
 
-					// for _, event := range natsEvents {
-					// 	subjectName := event.SubjectName(l.cfg)
+						// 	if err = l.publisher.Publish(subjectName, event); err != nil {
+						// 		l.errChannel <- fmt.Errorf("publish message: %w", err)
+						// 		continue
+						// 	}
 
-					// 	if err = l.publisher.Publish(subjectName, event); err != nil {
-					// 		l.errChannel <- fmt.Errorf("publish message: %w", err)
-					// 		continue
-					// 	}
+						// 	// publishedEvents.With(prometheus.Labels{"subject": subjectName, "table": event.Table}).Inc()
 
-					// 	// publishedEvents.With(prometheus.Labels{"subject": subjectName, "table": event.Table}).Inc()
-
-					// 	l.log.WithFields(logrus.Fields{
-					// 		"subject": subjectName,
-					// 		"action":  event.Action,
-					// 		"table":   event.Table,
-					// 		"lsn":     l.readLSN(),
-					// 	}).Infoln("event was sent")
-					// }
+						l.log.WithFields(logrus.Fields{
+							"subject": subjectName,
+							"action":  event.Action,
+							"table":   event.Table,
+							"lsn":     l.readLSN(),
+						}).Infoln("event was sent")
+					}
 
 					tx.Clear()
 				}

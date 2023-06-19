@@ -29,6 +29,7 @@ func RunCopyDeamon(ctx context.Context, logger *logrus.Entry, conf *config.Confi
 		kafka.WithBrokers(conf.Kafka.Brokers),
 		kafka.WithTopic(conf.Kafka.Topic),
 		kafka.WithFlags(b),
+		kafka.WithContext(ctx),
 	)
 	sant, err := initSanitase(logger, conf)
 	if err != nil {

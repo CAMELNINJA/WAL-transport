@@ -43,7 +43,14 @@ services:
     #     limits:
     #       cpus: '1'
     #       memory: 4G
-  masster-pg:
+  save_deamon:
+    build:
+      context: ../.
+      dockerfile: diplom/DockerfileSave
+    env_file: save_deamon.env
+    networks:
+      - app-tier
+  master-pg:
     build:
       context: ../.
       dockerfile: diplom/DockerfileDb

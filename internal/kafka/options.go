@@ -21,6 +21,7 @@ func Has(b, flag Bits) bool    { return b&flag != 0 }
 type kafk struct {
 	producer *kafka.Writer
 	consumer *kafka.Reader
+	ctx      context.Context
 	Brokers  []string
 	Topic    string
 	GroupID  string
@@ -49,6 +50,12 @@ func WithFlags(flags Bits) KafaOption {
 func WithGroupID(groupID string) KafaOption {
 	return func(k *kafk) {
 		k.GroupID = groupID
+	}
+}
+
+func WithContext(ctx context.Context) KafaOption {
+	return func(k *kafk) {
+		k.ctx = ctx
 	}
 }
 

@@ -49,7 +49,7 @@ type WalTransaction struct {
 	BeginTime     *time.Time
 	CommitTime    *time.Time
 	RelationStore map[int32]RelationData
-	Actions       []ActionData
+	Actions       []*ActionData
 }
 
 func (wt *WalTransaction) String() string {

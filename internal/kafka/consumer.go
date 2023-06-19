@@ -47,12 +47,15 @@ func (k kafk) ListenConfig(ctx context.Context, cfg chan<- config.Config) error 
 		if err != nil {
 			return err
 		}
-
+		if string(msg.Key) != k.GroupID {
+			continue
+		}
 		var messages config.Config
 		if err := json.Unmarshal(msg.Value, &messages); err != nil {
 			fmt.Println(err)
 			continue
 		}
+
 		cfg <- messages
 	}
 }

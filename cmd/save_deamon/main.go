@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var Version string
+var Version string = "1.0.0"
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -56,10 +56,13 @@ func main() {
 	case <-ctx.Done():
 		stop <- struct{}{}
 		logger.Info("Shutdown signal received")
+		close(cfgChan)
 		cancel()
+
 	case err := <-shutdown:
 		stop <- struct{}{}
 		logger.Error(err)
+		close(cfgChan)
 		cancel()
 	}
 

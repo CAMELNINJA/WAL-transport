@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/CAMELNINGA/cdc-postgres.git/config"
 	"github.com/CAMELNINGA/cdc-postgres.git/internal/app"
@@ -15,7 +16,6 @@ var Version string = "1.0.0"
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
 	baseConfig, err := config.NewBaseConfig()
 	if err != nil {
 		panic(err)
@@ -25,7 +25,7 @@ func main() {
 	shutdown := make(chan error, 1)
 	defer close(shutdown)
 	cfgChan := make(chan config.Config)
-	defer close(cfgChan)
+
 	stop := make(chan struct{})
 	defer close(stop)
 	var newCfg bool
@@ -42,11 +42,16 @@ func main() {
 	go func(stop chan struct{}) {
 		for {
 			select {
-			case cfg := <-cfgChan:
+			case cfg, ok := <-cfgChan:
+				if !ok {
+					logger.Info("stop config listener")
+					return
+				}
 				if newCfg {
 					logger.Info("New config received")
 					stop <- struct{}{}
 				}
+				fmt.Println(cfg)
 				go func(stop <-chan struct{}) {
 					newCfg = true
 					shutdown <- run(stop, logger, &cfg)
@@ -54,16 +59,20 @@ func main() {
 			}
 		}
 	}(stop)
+
 	select {
 	case <-ctx.Done():
 		stop <- struct{}{}
 		logger.Info("Shutdown signal received")
+		close(cfgChan)
 		cancel()
 	case err := <-shutdown:
 		stop <- struct{}{}
 		logger.Error(err)
+		close(cfgChan)
 		cancel()
 	}
+	time.Sleep(2 * time.Second)
 	logger.Info("Shutdown complete")
 }
 

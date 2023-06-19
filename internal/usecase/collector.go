@@ -50,7 +50,7 @@ func (c *collector) SaveData(ctx context.Context, message models.Message) error 
 	}
 	for _, v := range tx.Actions {
 
-		sql, args, err := c.querybuilder.QueryBuilder(&v)
+		sql, args, err := c.querybuilder.QueryBuilder(v)
 		if err != nil {
 			return checkTransaction(posTX, err)
 		}

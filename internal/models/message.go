@@ -18,12 +18,12 @@ type Message struct {
 
 func (m Message) ToWalTransaction() *WalTransaction {
 	return &WalTransaction{
-		Actions: []ActionData{m.ToActionData()},
+		Actions: []*ActionData{m.ToActionData()},
 	}
 }
 
-func (m Message) ToActionData() ActionData {
-	return ActionData{
+func (m Message) ToActionData() *ActionData {
+	return &ActionData{
 		Schema:     m.Schema,
 		Table:      m.Table,
 		Kind:       ActionKind(m.Action),
@@ -41,4 +41,8 @@ func (m Message) ToColumns(data map[string]any) []Column {
 		})
 	}
 	return columns
+}
+
+func (m Message) SubjectName() string {
+	return m.Schema + "." + m.Table
 }
