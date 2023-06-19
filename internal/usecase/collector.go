@@ -6,7 +6,7 @@ import (
 
 	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
 	repo "github.com/CAMELNINGA/cdc-postgres.git/internal/repository"
-	"github.com/jackc/pgx/v5/internal/sanitize"
+	"github.com/CAMELNINGA/cdc-postgres.git/internal/sanitize"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 )

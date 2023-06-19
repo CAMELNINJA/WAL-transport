@@ -47,6 +47,7 @@ func main() {
 					logger.Info("stop config listener")
 					return
 				}
+				fmt.Println("newCfg", newCfg)
 				if newCfg {
 					logger.Info("New config received")
 					stop <- struct{}{}
