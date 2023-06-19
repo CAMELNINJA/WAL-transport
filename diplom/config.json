@@ -30,8 +30,6 @@
                 {
                     "type": "filter",
                     "table": "*",
-                    "old_table": "",
-                    "schema": null,
                     "columns": {
                         "id": "id"
                     }
@@ -59,10 +57,9 @@
             },
             "sanitize": [
                 {
-                    "type": "filter",
-                    "table": "*",
-                    "old_table": "",
-                    "schema": null,
+                    "type": "replase",
+                    "table": "users",
+                    "old_table": "old_users",
                     "columns": {
                         "id": "id"
                     }
