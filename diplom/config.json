@@ -1,41 +1,73 @@
-
-{   
-            "database":{
-                "host": "pg",
+{
+    "kafka": {
+        "brokers": [
+            "camelninja.ru:9092"
+        ],
+        "topic": "Config",
+        "group_id": "cli"
+    },
+    "deamons": {
+        "copy_deamon": {
+            "database": {
+                "host": "slave-pg",
                 "port": 5432,
+                "name": "postgres",
                 "user": "postgres",
-                "password": "pass",
-                "database": "postgres"
+                "password": "pass"
             },
-            "mq":[
+            "listener": {
+                "refresh_connection": 1000000000000000000,
+                "slot_name": "test"
+            },
+            "kafka": {
+                "brokers": [
+                    "camelninja.ru:9092"
+                ],
+                "topic": "Data",
+                "group_id": "copy_deamon"
+            },
+            "sanitize": [
                 {
-                    "type": "kafka",
-                    "host": "localhost",
-                    "port": 9092,
-                    "topic": "test"
-                },{
-                    "type":"nats",
-                    "host":"localhost",
-                    "port":4222,
-                    "binding":"test"
+                    "type": "filter",
+                    "table": "*",
+                    "old_table": "",
+                    "schema": null,
+                    "columns": {
+                        "id": "id"
+                    }
                 }
-            ],
-            "sanitase":[
+            ]
+        },
+        "save_deamon": {
+            "database": {
+                "host": "master-pg",
+                "port": 5432,
+                "name": "postgres",
+                "user": "postgres",
+                "password": "pass"
+            },
+            "listener": {
+                "refresh_connection": 1000000000000000000,
+                "slot_name": "test"
+            },
+            "kafka": {
+                "brokers": [
+                    "camelninja.ru:9092"
+                ],
+                "topic": "Data",
+                "group_id": "save_deamon"
+            },
+            "sanitize": [
                 {
-                    "schema": "*",
-                    "table": [{
-                        "name": "test",
-                        "columns": [
-                            {
-                                "name": "id"
-                            },
-                            {
-                                "name": "name",
-                                "new_name": "name2"
-                            }
-                        ]
-                    }]
+                    "type": "filter",
+                    "table": "*",
+                    "old_table": "",
+                    "schema": null,
+                    "columns": {
+                        "id": "id"
+                    }
                 }
             ]
         }
-   
+    }
+}

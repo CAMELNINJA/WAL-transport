@@ -8,6 +8,7 @@ import (
 	"github.com/CAMELNINGA/cdc-postgres.git/pkg/postgres"
 )
 
+// CLi chicken config and send to kafka
 func main() {
 	ctx := context.Background()
 

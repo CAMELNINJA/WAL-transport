@@ -41,23 +41,22 @@ func main() {
 
 	go func(stop chan struct{}) {
 		for {
-			select {
-			case cfg, ok := <-cfgChan:
-				if !ok {
-					logger.Info("stop config listener")
-					return
-				}
-				fmt.Println("newCfg", newCfg)
-				if newCfg {
-					logger.Info("New config received")
-					stop <- struct{}{}
-				}
-				fmt.Println(cfg)
-				go func(stop <-chan struct{}) {
-					newCfg = true
-					shutdown <- run(stop, logger, &cfg)
-				}(stop)
+			cfg, ok := <-cfgChan
+			if !ok {
+				logger.Info("stop config listener")
+				return
 			}
+			fmt.Println("newCfg", newCfg)
+			if newCfg {
+				logger.Info("New config received")
+				stop <- struct{}{}
+			}
+			fmt.Println(cfg)
+			go func(stop <-chan struct{}) {
+				newCfg = true
+				shutdown <- run(stop, logger, &cfg)
+			}(stop)
+
 		}
 	}(stop)
 
