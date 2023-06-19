@@ -1,16 +1,10 @@
-{
-    "log_level": "info",
-    "sender":[
-        {   
-            "host": "localhost",
-            "port": 8080,
-            
-            "db":{
-                "type": "postgres",
-                "host": "localhost",
+
+{   
+            "database":{
+                "host": "pg",
                 "port": 5432,
                 "user": "postgres",
-                "password": "postgres",
+                "password": "pass",
                 "database": "postgres"
             },
             "mq":[
@@ -44,5 +38,4 @@
                 }
             ]
         }
-    ]
-}
+   

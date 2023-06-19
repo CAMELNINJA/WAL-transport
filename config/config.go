@@ -12,15 +12,15 @@ const (
 )
 
 type Config struct {
-	Database postgres.DatabaseCfg
-	Listener Listener
-	Kafka    Kafka
-	Sanitize []Sanitize
+	Database postgres.DatabaseCfg `json:"database"`
+	Listener Listener             `json:"listener"`
+	Kafka    Kafka                `json:"kafka"`
+	Sanitize []Sanitize           `json:"sanitize"`
 }
 
 type Listener struct {
-	RefreshConnection time.Duration `long:"refresh-connection" env:"REFRESH_CONNECTION" description:"Refresh connection"`
-	SlotName          string        `long:"slot-name" env:"SLOT_NAME" description:"Slot name"`
+	RefreshConnection time.Duration `json:"refresh_connection"`
+	SlotName          string        `json:"slot_name"`
 }
 
 // LoggerCfg path of the logger config.

@@ -30,7 +30,19 @@ services:
     #     limits:
     #       cpus: '1'
     #       memory: 4G
-
+  copy_deamon:
+    build:
+      context: ../.
+      dockerfile: diplom/DockerfileCopy
+    env_file: copy_deamon.env
+    networks:
+      - app-tier
+    # restart: unless-stopped
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1'
+    #       memory: 4G
   masster-pg:
     build:
       context: ../.

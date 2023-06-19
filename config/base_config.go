@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/jessevdk/go-flags"
@@ -20,7 +21,7 @@ func NewBaseConfig() (*BaseConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println(config)
 	return &config, nil
 
 }

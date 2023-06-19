@@ -65,7 +65,7 @@ func RunSaveDeamon(ctx context.Context, logger *logrus.Entry, conf *config.Confi
 		kafka.WithBrokers(conf.Kafka.Brokers),
 		kafka.WithTopic(conf.Kafka.Topic),
 		kafka.WithFlags(b),
-		kafka.WithContext(ctx),
+
 		kafka.WithGroupID(conf.Kafka.GroupID),
 	)
 
@@ -135,9 +135,6 @@ func KafkaRun(ctx context.Context, logger *logrus.Entry, cfg config.Kafka, cfgCh
 		kafka.WithGroupID(cfg.GroupID),
 	)
 
-	if err := kafka.ListenConfig(ctx, cfgChan); err != nil {
-		logger.Error(err)
-		return err
-	}
+	return kafka.ListenConfig(ctx, cfgChan)
 
 }

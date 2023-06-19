@@ -8,11 +8,11 @@ import (
 )
 
 type DatabaseCfg struct {
-	Host     string `mapstructure:"host" valid:"required"`
-	Port     uint16 `mapstructure:"port" valid:"required"`
-	Name     string `mapstructure:"name" valid:"required"`
-	User     string `mapstructure:"user" valid:"required"`
-	Password string `mapstructure:"password" valid:"required"`
+	Host     string `json:"host"`
+	Port     uint16 `json:"port"`
+	Name     string `json:"name"`
+	User     string `json:"user"`
+	Password string `json:"password"`
 }
 
 // initPgxConnections initialise db and replication connections.

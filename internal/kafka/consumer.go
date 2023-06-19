@@ -41,8 +41,9 @@ func (k kafk) ListenConfig(ctx context.Context, cfg chan<- config.Config) error 
 	if k.consumer == nil {
 		return erorwallistner.ErrNotConnectedKafaConsumer
 	}
+
 	for {
-		msg, err := k.consumer.ReadMessage(k.ctx)
+		msg, err := k.consumer.ReadMessage(ctx)
 		if err != nil {
 			return err
 		}
