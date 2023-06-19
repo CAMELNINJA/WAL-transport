@@ -6,6 +6,7 @@ import (
 
 	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
 	repo "github.com/CAMELNINGA/cdc-postgres.git/internal/repository"
+	"github.com/jackc/pgx/v5/internal/sanitize"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 )
@@ -23,12 +24,17 @@ type transaction interface {
 type collector struct {
 	querybuilder querybuilder
 	connections  *pgxpool.Pool
+	sanitize     sanitize.Handler
 }
 
-func NewCollector(qb querybuilder, connections *pgxpool.Pool) *collector {
+func NewCollector(qb querybuilder,
+	connections *pgxpool.Pool,
+	sanitizer sanitize.Handler,
+) *collector {
 	return &collector{
 		querybuilder: qb,
 		connections:  connections,
+		sanitize:     sanitizer,
 	}
 }
 
@@ -49,7 +55,10 @@ func (c *collector) SaveData(ctx context.Context, message models.Message) error 
 		return err
 	}
 	for _, v := range tx.Actions {
-
+		v := c.sanitize.Handle(v)
+		if v == nil {
+			continue
+		}
 		sql, args, err := c.querybuilder.QueryBuilder(v)
 		if err != nil {
 			return checkTransaction(posTX, err)

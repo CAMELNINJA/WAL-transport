@@ -59,7 +59,12 @@ func RunSaveDeamon(ctx context.Context, logger *logrus.Entry, conf *config.Confi
 		logger.Error(err)
 		return err
 	}
-	collector := usecase.NewCollector(querybuilder.NewQueryBuilder(logger), masterConn)
+	sanit, err := initSanitase(logger, conf)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+	collector := usecase.NewCollector(querybuilder.NewQueryBuilder(logger), masterConn, sanit)
 	var b kafka.Bits
 	b = kafka.Set(b, kafka.Consumer)
 	kafka := kafka.NewKafka(

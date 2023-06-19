@@ -210,7 +210,11 @@ func (l *Listener) Stream(ctx context.Context) {
 				}
 				var newActions []*models.ActionData
 				for _, actions := range tx.Actions {
-					newActions = append(newActions, l.sanitizer.Handle(actions))
+					v := l.sanitizer.Handle(actions)
+					if v != nil {
+						newActions = append(newActions, v)
+					}
+
 				}
 				tx.Actions = newActions
 				l.log.Info(tx.RelationStore)
