@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
-	error_walListner "github.com/CAMELNINGA/cdc-postgres.git/pkg/error_walListner"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/models"
+	error_walListner "github.com/CAMELNINGA/WAL-transport.git/pkg/error_walListner"
 	"github.com/sirupsen/logrus"
 )
 

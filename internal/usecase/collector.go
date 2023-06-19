@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
-	repo "github.com/CAMELNINGA/cdc-postgres.git/internal/repository"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/sanitize"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/models"
+	repo "github.com/CAMELNINGA/WAL-transport.git/internal/repository"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/sanitize"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 )

@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/CAMELNINGA/cdc-postgres.git/config"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/app"
+	"github.com/CAMELNINGA/WAL-transport.git/config"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/app"
 	"github.com/sirupsen/logrus"
 )
 

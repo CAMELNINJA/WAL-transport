@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	"github.com/CAMELNINGA/cdc-postgres.git/pkg/postgres"
+	"github.com/CAMELNINGA/WAL-transport.git/pkg/postgres"
 )
 
 const (

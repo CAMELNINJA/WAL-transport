@@ -3,9 +3,9 @@ package kafka
 import (
 	"encoding/json"
 
-	"github.com/CAMELNINGA/cdc-postgres.git/config"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
-	error_walListner "github.com/CAMELNINGA/cdc-postgres.git/pkg/error_walListner"
+	"github.com/CAMELNINGA/WAL-transport.git/config"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/models"
+	error_walListner "github.com/CAMELNINGA/WAL-transport.git/pkg/error_walListner"
 	kafka "github.com/segmentio/kafka-go"
 )
 

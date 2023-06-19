@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
-	error_walListner "github.com/CAMELNINGA/cdc-postgres.git/pkg/error_walListner"
+	error_walListner "github.com/CAMELNINGA/WAL-transport.git/pkg/error_walListner"
 )
 
 // ActionKind kind of action on WAL message.

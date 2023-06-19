@@ -3,7 +3,7 @@ package querybuilder
 import (
 	"fmt"
 
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/models"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/sirupsen/logrus"
 )

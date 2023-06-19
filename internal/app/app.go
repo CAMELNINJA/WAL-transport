@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/binary"
 
-	"github.com/CAMELNINGA/cdc-postgres.git/config"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/kafka"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/parser"
-	querybuilder "github.com/CAMELNINGA/cdc-postgres.git/internal/query_builder"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/repository"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/sanitize"
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/usecase"
-	"github.com/CAMELNINGA/cdc-postgres.git/pkg/postgres"
+	"github.com/CAMELNINGA/WAL-transport.git/config"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/kafka"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/parser"
+	querybuilder "github.com/CAMELNINGA/WAL-transport.git/internal/query_builder"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/repository"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/sanitize"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/usecase"
+	"github.com/CAMELNINGA/WAL-transport.git/pkg/postgres"
 	"github.com/sirupsen/logrus"
 )
 

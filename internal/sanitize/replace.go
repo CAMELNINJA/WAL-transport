@@ -1,7 +1,7 @@
 package sanitize
 
 import (
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/models"
 )
 
 // ReplaceHandler is a handler that replaces certain values in the request with new ones

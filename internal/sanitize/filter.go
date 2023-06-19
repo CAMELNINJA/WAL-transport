@@ -1,7 +1,7 @@
 package sanitize
 
 import (
-	"github.com/CAMELNINGA/cdc-postgres.git/internal/models"
+	"github.com/CAMELNINGA/WAL-transport.git/internal/models"
 )
 
 // FilterHandler is a handler that filters out certain data from the request

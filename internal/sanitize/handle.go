@@ -1,6 +1,6 @@
 package sanitize
 
-import "github.com/CAMELNINGA/cdc-postgres.git/internal/models"
+import "github.com/CAMELNINGA/WAL-transport.git/internal/models"
 
 // Handler interface defines the method that each handler in the chain must implement
 type Handler interface {

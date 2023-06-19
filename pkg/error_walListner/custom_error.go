@@ -12,6 +12,10 @@ var (
 	ErrRelationNotFound         = errors.New("relation not found")
 	ErrNotConnectedKafaProducer = errors.New("not connected kafka producer")
 	ErrNotConnectedKafaConsumer = errors.New("not connected kafka consumer")
+	ErrConfigFileNotFound       = errors.New("config file not found")
+	ErrConfigFileNotParsed      = errors.New("config file not parsed")
+	ErrKafkaBrokersNotSet       = errors.New("kafka brokers not set")
+	ErrSendConfigToKafka        = errors.New("error send config to kafka")
 )
 
 type ServiceErr struct {
