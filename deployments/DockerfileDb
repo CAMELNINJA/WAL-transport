@@ -1,6 +1,6 @@
 FROM postgres:14.4-alpine
 
-COPY diplom/my-postgres.conf /etc/postgresql/postgresql.conf
+COPY deployments/my-postgres.conf /etc/postgresql/postgresql.conf
 ENV POSTGRES_PASSWORD=pass
 
 #COPY deployments/data/ /docker-entrypoint-initdb.d/
