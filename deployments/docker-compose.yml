@@ -33,7 +33,7 @@ services:
   copy_deamon:
     build:
       context: ../.
-      dockerfile: diplom/DockerfileCopy
+      dockerfile: deployments/DockerfileCopy
     env_file: copy_deamon.env
     networks:
       - app-tier
@@ -46,7 +46,7 @@ services:
   save_deamon:
     build:
       context: ../.
-      dockerfile: diplom/DockerfileSave
+      dockerfile: deployments/DockerfileSave
     env_file: save_deamon.env
     networks:
       - app-tier
