@@ -230,16 +230,6 @@ func (l *Listener) Stream(ctx context.Context) {
 							continue
 						}
 
-						// for _, event := range natsEvents {
-						// 	subjectName := event.SubjectName(l.cfg)
-
-						// 	if err = l.publisher.Publish(subjectName, event); err != nil {
-						// 		l.errChannel <- fmt.Errorf("publish message: %w", err)
-						// 		continue
-						// 	}
-
-						// 	// publishedEvents.With(prometheus.Labels{"subject": subjectName, "table": event.Table}).Inc()
-
 						l.log.WithFields(logrus.Fields{
 							"subject": subjectName,
 							"action":  event.Action,

@@ -9,7 +9,7 @@ services:
   slave-pg:
     build:
       context: ../.
-      dockerfile: diplom/DockerfileDb
+      dockerfile: deployments/DockerfileDb
     command:
       - "postgres"
       - "-c"
@@ -53,7 +53,7 @@ services:
   master-pg:
     build:
       context: ../.
-      dockerfile: diplom/DockerfileDb
+      dockerfile: deployments/DockerfileDb
     ports:
       - "5434:5432"
     networks:
