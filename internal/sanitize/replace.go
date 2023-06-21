@@ -21,7 +21,7 @@ func (h *ReplaceHandler) Handle(request *models.ActionData) *models.ActionData {
 			for _, v := range request.NewColumns {
 				_, prs := h.replaseColumns[v.Name]
 				if prs {
-					v.Value = h.replaseColumns[v.Name]
+					v.Name = h.replaseColumns[v.Name]
 				}
 			}
 		}

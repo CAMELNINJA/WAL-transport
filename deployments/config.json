@@ -123,7 +123,10 @@
                 {
                     "type": "replase",
                     "table": "table2",
-                    "old_table": "seve_table2"
+                    "old_table": "seve_table2",
+                    "columns": {
+                        "name": "name2"
+                    }
                 }
             ]
         }
