@@ -30,24 +30,18 @@ services:
     #     limits:
     #       cpus: '1'
     #       memory: 4G
-  copy_deamon:
+  copy_deamon1:
     build:
       context: ../.
       dockerfile: deployments/DockerfileCopy
-    env_file: copy_deamon.env
+    env_file: copy_deamon1.env
     networks:
       - app-tier
-    # restart: unless-stopped
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '1'
-    #       memory: 4G
-  save_deamon:
+  save_deamon1:
     build:
       context: ../.
       dockerfile: deployments/DockerfileSave
-    env_file: save_deamon.env
+    env_file: save_deamon1.env
     networks:
       - app-tier
   master-pg:
