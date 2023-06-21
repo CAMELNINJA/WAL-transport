@@ -7,11 +7,11 @@
         "group_id": "cli"
     },
     "deamons": {
-        "copy_deamon": {
+        "copy_deamon1": {
             "database": {
-                "host": "slave-pg",
-                "port": 5432,
-                "name": "postgres",
+                "host": "camelninja.ru",
+                "port": 5433,
+                "name": "copy_db1",
                 "user": "postgres",
                 "password": "pass"
             },
@@ -24,7 +24,7 @@
                     "camelninja.ru:9092"
                 ],
                 "topic": "Data",
-                "group_id": "copy_deamon"
+                "group_id": "copy_deamon1"
             },
             "sanitize": [
                 {
@@ -36,11 +36,40 @@
                 }
             ]
         },
-        "save_deamon": {
+        "copy_deamon2": {
             "database": {
-                "host": "master-pg",
-                "port": 5432,
-                "name": "postgres",
+                "host": "camelninja.ru",
+                "port": 5433,
+                "name": "copy_db2",
+                "user": "postgres",
+                "password": "pass"
+            },
+            "listener": {
+                "refresh_connection": 1000000000000000000,
+                "slot_name": "test2"
+            },
+            "kafka": {
+                "brokers": [
+                    "camelninja.ru:9092"
+                ],
+                "topic": "Data",
+                "group_id": "copy_deamon2"
+            },
+            "sanitize": [
+                {
+                    "type": "filter",
+                    "table": "*",
+                    "columns": {
+                        "id": "id"
+                    }
+                }
+            ]
+        },
+        "save_deamon1": {
+            "database": {
+                "host": "camelninja.ru",
+                "port": 5434,
+                "name": "save_db1",
                 "user": "postgres",
                 "password": "pass"
             },
@@ -53,16 +82,48 @@
                     "camelninja.ru:9092"
                 ],
                 "topic": "Data",
-                "group_id": "save_deamon"
+                "group_id": "save_deamon1"
             },
             "sanitize": [
                 {
+                    "type": "filter",
+                    "table": "table2"
+                },
+                {
                     "type": "replase",
-                    "table": "users",
-                    "old_table": "old_users",
-                    "columns": {
-                        "id": "id"
-                    }
+                    "table": "table1",
+                    "old_table": "seve_table1"
+                }
+            ]
+        },
+        "save_deamon2": {
+            "database": {
+                "host": "camelninja.ru",
+                "port": 5434,
+                "name": "save_db2",
+                "user": "postgres",
+                "password": "pass"
+            },
+            "listener": {
+                "refresh_connection": 1000000000000000000,
+                "slot_name": "test"
+            },
+            "kafka": {
+                "brokers": [
+                    "camelninja.ru:9092"
+                ],
+                "topic": "Data",
+                "group_id": "save_deamon2"
+            },
+            "sanitize": [
+                {
+                    "type": "filter",
+                    "table": "table1"
+                },
+                {
+                    "type": "replase",
+                    "table": "table2",
+                    "old_table": "seve_table2"
                 }
             ]
         }

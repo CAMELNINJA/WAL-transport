@@ -55,11 +55,12 @@ func (c *collector) SaveData(ctx context.Context, message models.Message) error 
 		return err
 	}
 	for _, v := range tx.Actions {
-		v := c.sanitize.Handle(v)
-		if v == nil {
+		v1 := c.sanitize.Handle(v)
+		if v1 == nil {
+
 			continue
 		}
-		sql, args, err := c.querybuilder.QueryBuilder(v)
+		sql, args, err := c.querybuilder.QueryBuilder(v1)
 		if err != nil {
 			return checkTransaction(posTX, err)
 		}
