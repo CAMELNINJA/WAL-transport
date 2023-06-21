@@ -37,11 +37,25 @@ services:
     env_file: copy_deamon1.env
     networks:
       - app-tier
+  copy_deamon2:
+    build:
+      context: ../.
+      dockerfile: deployments/DockerfileCopy
+    env_file: copy_deamon2.env
+    networks:
+      - app-tier
   save_deamon1:
     build:
       context: ../.
       dockerfile: deployments/DockerfileSave
     env_file: save_deamon1.env
+    networks:
+      - app-tier
+  save_deamon2:
+    build:
+      context: ../.
+      dockerfile: deployments/DockerfileSave
+    env_file: save_deamon2.env
     networks:
       - app-tier
   master-pg:
