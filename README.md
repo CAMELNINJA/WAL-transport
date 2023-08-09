@@ -1,6 +1,8 @@
 # Wal-transport
 This is my final qualifying work for the undergraduate ITIS 2019-2023
 
+- [FINAL QUALIFICATION PAPER](https://kpfu.ru/student_diplom/10.160.178.20_O6_XX_U9XEGC_8TRNI4Z_G14VV13PK3R4M8TTW05K0S73NAFM7_Aidashev.pdf)
+
 This project is a Go-based data processing application that performs the following tasks:
 
 1. Reads data from Write-Ahead Log (WAL).
