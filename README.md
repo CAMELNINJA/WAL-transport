@@ -40,7 +40,7 @@ Follow the instructions below to get a local copy of the project up and running.
 1. Change into the project directory:
 
    ```bash
-   cd your-repository
+   cd WAL-transports
    ```
 
 1. Install project dependencies:
